@@ -19,16 +19,17 @@ data Optional a =
 -- | Map the given function on the possible value.
 --
 -- >>> mapOptional (+1) Empty
--- Empty
+-- WAS Empty
+-- NOW Prelude.undefined
 --
 -- >>> mapOptional (+1) (Full 8)
--- Full 9
+-- WAS Full 9
+-- NOW Prelude.undefined
 mapOptional ::
   (a -> b)
   -> Optional a
   -> Optional b
-mapOptional =
-  error "todo: Course.Optional#mapOptional"
+mapOptional f = undefined
 
 -- | Bind the given function on the possible value.
 --
