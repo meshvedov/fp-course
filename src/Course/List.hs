@@ -77,8 +77,9 @@ headOr ::
   a
   -> List a
   -> a
-headOr _ (x :. _) = x
-headOr n Nil = n
+headOr = foldRight const
+-- headOr _ (x :. _) = x
+-- headOr n Nil = n
 
 -- | The product of the elements of a list.
 --
@@ -118,7 +119,7 @@ sum = foldRight (+) 0
 length ::
   List a
   -> Int
-length = foldRight (\_ n -> n + 1) 0
+length = foldLeft (const . (+1)) 0
 
 -- | Map the given function on each element of the list.
 --
@@ -148,7 +149,7 @@ filter ::
   (a -> Bool)
   -> List a
   -> List a
-filter p = foldRight (\x acc -> if p x then x :. acc else acc) Nil
+filter p = foldRight (\x -> if p x then (x :.) else id) Nil
 
 -- | Append two lists to a new list.
 --
@@ -166,7 +167,7 @@ filter p = foldRight (\x acc -> if p x then x :. acc else acc) Nil
   List a
   -> List a
   -> List a
-(++) xs ys = foldRight (:.) ys xs
+(++) = flip $ foldRight (:.)
 
 infixr 5 ++
 
@@ -199,7 +200,8 @@ flatMap ::
   (a -> List b)
   -> List a
   -> List b
-flatMap f = foldRight (\x acc -> f x ++ acc) Nil
+-- flatMap f = foldRight (\x acc -> f x ++ acc) Nil
+flatMap f = flatten . map f
 
 -- | Flatten a list of lists to a list (again).
 -- HOWEVER, this time use the /flatMap/ function that you just wrote.
@@ -232,7 +234,7 @@ flattenAgain = flatMap id
 seqOptional ::
   List (Optional a)
   -> Optional (List a)
-seqOptional = foldLeft (\b opt -> case b of
+seqOptional = foldLeft (\ b opt -> case b of
                                             Empty -> Empty
                                             (Full x) -> case opt of
                                                           Empty    -> Empty
