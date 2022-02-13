@@ -30,7 +30,7 @@ mapOptional ::
   -> Optional a
   -> Optional b
 mapOptional _ Empty    = Empty
-mapOptional f (Full x) = Full (f x) 
+mapOptional f (Full x) = Full (f x)
 
 -- | Bind the given function on the possible value.
 --
@@ -104,6 +104,9 @@ applyOptional f a = bindOptional (\f' -> mapOptional f' a) f
 
 twiceOptional :: (a -> b -> c) -> Optional a -> Optional b -> Optional c
 twiceOptional f = applyOptional . mapOptional f
+-- twiceOptional f opA = applyOptional $ mapOptional f opA
+-- mapOptional :: (a -> b) -> Optional a -> Optional b
+-- applyOptional :: Optional (a -> b) -> Optional a -> Optional b
 
 contains :: Eq a => a -> Optional a -> Bool
 contains _ Empty = False

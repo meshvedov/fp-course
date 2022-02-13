@@ -28,6 +28,8 @@ import qualified Numeric as N
 -- >>> import Course.Core(even, id, const)
 -- >>> import qualified Prelude as P(fmap, foldr)
 -- >>> instance Arbitrary a => Arbitrary (List a) where arbitrary = P.fmap ((P.foldr (:.) Nil) :: ([a] -> List a)) arbitrary
+-- Could not find module ‘Test.QuickCheck’
+-- Use -v (or `:set -v` in ghci) to see a list of the files searched for.
 --
 
 -- BEGIN Helper functions and data types
@@ -71,8 +73,10 @@ foldLeft f b (h :. t) = let b' = f b h in b' `seq` foldLeft f b' t
 -- 3
 --
 -- prop> \x -> x `headOr` infinity == 0
+-- Add QuickCheck to your cabal dependencies to run this test.
 --
 -- prop> \x -> x `headOr` Nil == x
+-- Add QuickCheck to your cabal dependencies to run this test.
 headOr ::
   a
   -> List a
@@ -105,6 +109,7 @@ product = foldRight (*) 1
 -- 10
 --
 -- prop> \x -> foldLeft (-) (sum x) x == 0
+-- Add QuickCheck to your cabal dependencies to run this test.
 sum ::
   List Int
   -> Int
@@ -221,7 +226,12 @@ flattenAgain = flatMap id
 -- then return `Empty`.
 --
 -- >>> seqOptional (Full 1 :. Full 10 :. Nil)
--- Full [1, 10]
+-- WAS WAS WAS WAS WAS Full [1, 10]
+-- WAS WAS WAS WAS NOW Full [1,10]
+-- WAS WAS WAS NOW Full [1,10]
+-- WAS WAS NOW Full [1,10]
+-- WAS NOW Full [1,10]
+-- NOW Full [1,10]
 --
 -- >>> seqOptional Nil
 -- Full []
@@ -234,11 +244,7 @@ flattenAgain = flatMap id
 seqOptional ::
   List (Optional a)
   -> Optional (List a)
-seqOptional = foldLeft (\ b opt -> case b of
-                                            Empty -> Empty
-                                            (Full x) -> case opt of
-                                                          Empty    -> Empty
-                                                          (Full a) -> Full (x ++ (a:.Nil))) (Full Nil)
+seqOptional = foldRight (twiceOptional (:.)) (Full Nil)
 
 -- | Find the first element in the list matching the predicate.
 --
@@ -260,8 +266,10 @@ find ::
   (a -> Bool)
   -> List a
   -> Optional a
-find =
-  error "todo: Course.List#find"
+-- find p ls = case filter p ls of
+--               Nil -> Empty
+--               (x:._) -> Full x
+find p = foldRight (_) Empty
 
 -- | Determine if the length of the given list is greater than 4.
 --
