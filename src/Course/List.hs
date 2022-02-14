@@ -266,10 +266,9 @@ find ::
   (a -> Bool)
   -> List a
   -> Optional a
--- find p ls = case filter p ls of
---               Nil -> Empty
---               (x:._) -> Full x
-find p = foldRight (_) Empty
+find p ls = case filter p ls of
+              Nil -> Empty
+              (x:._) -> Full x
 
 -- | Determine if the length of the given list is greater than 4.
 --
@@ -287,8 +286,7 @@ find p = foldRight (_) Empty
 lengthGT4 ::
   List a
   -> Bool
-lengthGT4 =
-  error "todo: Course.List#lengthGT4"
+lengthGT4 = (>4) . length
 
 -- | Reverse a list.
 --
@@ -299,28 +297,30 @@ lengthGT4 =
 -- [1]
 --
 -- prop> \x -> let types = x :: List Int in reverse x ++ reverse y == reverse (y ++ x)
+-- Add QuickCheck to your cabal dependencies to run this test.
 --
 -- prop> \x -> let types = x :: Int in reverse (x :. Nil) == x :. Nil
+-- Add QuickCheck to your cabal dependencies to run this test.
 reverse ::
   List a
   -> List a
-reverse =
-  error "todo: Course.List#reverse"
+reverse = foldLeft (flip (:.)) Nil
 
 -- | Produce an infinite `List` that seeds with the given value at its head,
 -- then runs the given function for subsequent elements
 --
 -- >>> let (x:.y:.z:.w:._) = produce (+1) 0 in [x,y,z,w]
--- [0,1,2,3]
+-- WAS [0,1,2,3]
+-- NOW Prelude.undefined
 --
 -- >>> let (x:.y:.z:.w:._) = produce (*2) 1 in [x,y,z,w]
--- [1,2,4,8]
+-- WAS [1,2,4,8]
+-- 
 produce ::
   (a -> a)
   -> a
   -> List a
-produce f x =
-  error "todo: Course.List#produce"
+produce f x = x :. produce f (f x)
 
 -- | Do anything other than reverse a list.
 -- Is it even possible?
@@ -334,8 +334,7 @@ produce f x =
 notReverse ::
   List a
   -> List a
-notReverse =
-  error "todo: Is it even possible?"
+notReverse = reverse
 
 ---- End of list exercises
 
