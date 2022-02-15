@@ -192,7 +192,7 @@ flatten ::
 flatten = foldRight (++) Nil
 
 -- | Map a function then flatten to a list.
---
+--  
 -- >>> flatMap (\x -> x :. x + 1 :. x + 2 :. Nil) (1 :. 2 :. 3 :. Nil)
 -- [1,2,3,2,3,4,3,4,5]
 --
