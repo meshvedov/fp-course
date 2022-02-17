@@ -64,7 +64,7 @@ get = State (\s -> (s,s))
 put ::
   s
   -> State s ()
-put s = State (\s -> ((),s))
+put = State . const . (,) ()
 -- | Implement the `Functor` instance for `State s`.
 --
 -- >>> runState ((+1) <$> State (\s -> (9, s * 2))) 3
@@ -74,8 +74,7 @@ instance Functor (State s) where
     (a -> b)
     -> State s a
     -> State s b
-  (<$>) =
-    error "todo: Course.State#(<$>)"
+  f <$> (State k) = State (\s -> let (a,t) = k s in (f a, t))
 
 -- | Implement the `Applicative` instance for `State s`.
 --
@@ -91,14 +90,14 @@ instance Applicative (State s) where
   pure ::
     a
     -> State s a
-  pure =
-    error "todo: Course.State pure#instance (State s)"
+  pure a = State (\s -> (a,s)) 
   (<*>) ::
     State s (a -> b)
     -> State s a
     -> State s b
-  (<*>) =
-    error "todo: Course.State (<*>)#instance (State s)"
+  (State f) <*> (State a) = State (\s -> let (g,t) = f s
+                                             (a',t') = a t
+                                         in (g a', t'))
 
 -- | Implement the `Monad` instance for `State s`.
 --
@@ -115,8 +114,9 @@ instance Monad (State s) where
     (a -> State s b)
     -> State s a
     -> State s b
-  (=<<) =
-    error "todo: Course.State (=<<)#instance (State s)"
+  f =<< (State g) = State (\s -> let (a, t) = g s
+                                     (State b) = f a
+                                 in b t)
 
 -- | Find the first element in a `List` that satisfies a given predicate.
 -- It is possible that no element is found, hence an `Optional` result.
@@ -137,8 +137,9 @@ findM ::
   (a -> f Bool)
   -> List a
   -> f (Optional a)
-findM =
-  error "todo: Course.State#findM"
+-- findM f = foldRight (\x acc -> f x >>= \t -> if t then pure (Full x) else acc ) (pure Empty) 
+findM _ Nil = pure Empty 
+findM p (h:.t) = (\q -> if q then pure (Full h) else findM p t) =<< p h
 
 -- | Find the first element in a `List` that repeats.
 -- It is possible that no element repeats, hence an `Optional` result.
@@ -154,8 +155,18 @@ firstRepeat ::
   Ord a =>
   List a
   -> Optional a
-firstRepeat =
-  error "todo: Course.State#firstRepeat"
+firstRepeat = listWithState findM S.member
+
+listWithState :: 
+  Ord a1 =>
+  ((a1 -> State (S.Set a1) a2) 
+  -> t 
+  -> State (S.Set a3) a)
+  -> (a1 -> S.Set a1 -> a2) 
+  -> t 
+  -> a 
+listWithState f m x =
+  eval (f (State . lift2 (lift2 (,)) m S.insert) x) S.empty
 
 -- | Remove all duplicate elements in a `List`.
 -- /Tip:/ Use `filtering` and `State` with a @Data.Set#Set@.
